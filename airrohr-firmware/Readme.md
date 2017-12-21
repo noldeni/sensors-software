@@ -63,6 +63,7 @@ Installierbar über Arduino IDE (Menü Sketch -> Bibliothek einbinden -> Bibliot
 * [Adafruit BMP085 library](https://github.com/adafruit/Adafruit-BMP085-Library) (1.0.0) (BSD)
 * [Adafruit BMP280 library](https://github.com/adafruit/Adafruit_BMP280_Library) (1.0.2) (BSD)
 * [Adafruit BME280 library](https://github.com/adafruit/Adafruit_BME280_Library) (1.0.5) (BSD)
+* [Adafruit BME680 library](https://github.com/adafruit/Adafruit_BME680) (1.0.5) (BSD)
 * [DallasTemperature](https://github.com/milesburton/Arduino-Temperature-Control-Library) (3.7.6)
 * [DHT sensor library](https://github.com/adafruit/DHT-sensor-library) (1.3.0) (MIT)
 * [ESP8266 and ESP32 Oled driver for SSD1306 display](https://github.com/squix78/esp8266-oled-ssd1306) (3.2.7) (MIT)
@@ -154,7 +155,7 @@ Pinout:
 * Pin 7	(RX)     -> Pin D2 (GPIO4)
 * Pin 8 (GND)    -> GND
 
-### BMP180 / BMP280 / BME280 (I2C)
+### BMP180 / BMP280 / BME280 / BME680 (I2C)
 * VCC  ->  Pin 3V3
 * GND  ->  Pin GND
 * SCL  ->  Pin D4 (GPIO2)
@@ -192,6 +193,6 @@ Diese Firmware definiert die Pins für die verschiedenenen Sensoren wie folgt:
 * SDS011 => Pin 1
 * BMP180 => Pin 3
 * BMP280 => Pin 3
-* BME280 => Pin 11
+* BME280/BME680 => Pin 11
 * GPS(Neo-6M) => Pin 9
 
