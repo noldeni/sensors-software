@@ -3517,6 +3517,28 @@ bool initBME280(char addr) {
 }
 
 /*****************************************************************
+/* Init BME680                                                   *
+/*****************************************************************/
+bool initBME680(char addr) {
+    debug_out(F("Trying BME680 sensor on "), DEBUG_MIN_INFO, 0);
+    debug_out(String(addr, HEX), DEBUG_MIN_INFO, 0);
+
+    if (bme680.begin(addr)) {
+        debug_out(F(" ... found"), DEBUG_MIN_INFO, 1);
+        // Set up oversampling and filter initialization
+        bme680.setTemperatureOversampling(BME680_OS_8X);
+        bme680.setHumidityOversampling(BME680_OS_2X);
+        bme680.setPressureOversampling(BME680_OS_4X);
+        bme680.setIIRFilterSize(BME680_FILTER_SIZE_3);
+        bme680.setGasHeater(320, 150); // 320*C for 150 ms
+        return true;
+    } else {
+        debug_out(F(" ... not found"), DEBUG_MIN_INFO, 1);
+        return false;
+    }
+}
+
+/*****************************************************************
 /* The Setup                                                     *
 /*****************************************************************/
 void setup() {
