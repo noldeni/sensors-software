@@ -72,7 +72,7 @@
 /************************************************************************
 /* Extensions connected via I2C:                                        *
 /* HTU21D (https://www.sparkfun.com/products/13763),                    *
-/* BMP180, BMP280, BME280, OLED Display with SSD1306 (128x64 px)        *
+/* BMP180, BMP280, BME280, BME680, OLED Display with SSD1306 (128x64 px)*
 /*                                                                      *
 /* Wiring Instruction                                                   *
 /* (see labels on display or sensor board)                              *
@@ -111,6 +111,7 @@
 #include <Adafruit_BMP085.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_BME280.h>
+#include <Adafruit_BME680.h>
 #include <DallasTemperature.h>
 #include <TinyGPS++.h>
 #include <Ticker.h>
@@ -165,6 +166,8 @@ bool bmp280_read = 0;
 bool bmp280_init_failed = 0;
 bool bme280_read = 0;
 bool bme280_init_failed = 0;
+bool bme680_read = 0;
+bool bme680_init_failed = 0;
 bool ds18b20_read = 0;
 bool gps_read = 0;
 bool send2dusti = 1;
@@ -258,6 +261,11 @@ Adafruit_BMP280 bmp280;
 /* BME280 declaration                                            *
 /*****************************************************************/
 Adafruit_BME280 bme280;
+
+/*****************************************************************
+/* BME680 declaration                                            *
+/*****************************************************************/
+Adafruit_BME680 bme680;
 
 /*****************************************************************
 /* DS18B20 declaration                                            *
@@ -369,6 +377,10 @@ double last_value_BMP280_P = -1.0;
 double last_value_BME280_T = -128.0;
 double last_value_BME280_H = -1.0;
 double last_value_BME280_P = -1.0;
+double last_value_BME680_T = -128.0;
+double last_value_BME680_H = -1.0;
+double last_value_BME680_P = -1.0;
+double last_value_BME680_V = -1.0;
 double last_value_DS18B20_T = -1.0;
 double last_value_GPS_lat = -200.0;
 double last_value_GPS_lon = -200.0;
@@ -736,6 +748,7 @@ void copyExtDef() {
     setDef(bmp_read, BMP_READ);
     setDef(bmp280_read, BMP280_READ);
     setDef(bme280_read, BME280_READ);
+    setDef(bme680_read, BME680_READ);
     setDef(ds18b20_read, DS18B20_READ);
     setDef(gps_read, GPS_READ);
     setDef(send2dusti, SEND2DUSTI);
@@ -825,6 +838,7 @@ void readConfig() {
                     setFromJSON(bmp_read);
                     setFromJSON(bmp280_read);
                     setFromJSON(bme280_read);
+                    setFromJSON(bme680_read);
                     setFromJSON(ds18b20_read);
                     setFromJSON(gps_read);
                     setFromJSON(send2dusti);
@@ -898,6 +912,7 @@ void writeConfig() {
     copyToJSON_Bool(bmp_read);
     copyToJSON_Bool(bmp280_read);
     copyToJSON_Bool(bme280_read);
+    copyToJSON_Bool(bme680_read);
     copyToJSON_Bool(ds18b20_read);
     copyToJSON_Bool(gps_read);
     copyToJSON_Bool(send2dusti);
@@ -1269,6 +1284,7 @@ void webserver_config() {
         page_content += form_checkbox_sensor("bmp_read", FPSTR(INTL_BMP180), bmp_read);
         page_content += form_checkbox_sensor("bmp280_read", FPSTR(INTL_BMP280), bmp280_read);
         page_content += form_checkbox_sensor("bme280_read", FPSTR(INTL_BME280), bme280_read);
+        page_content += form_checkbox_sensor("bme680_read", FPSTR(INTL_BME680), bme680_read);
         page_content += form_checkbox_sensor("ds18b20_read", FPSTR(INTL_DS18B20), ds18b20_read);
         page_content += form_checkbox("gps_read", FPSTR(INTL_NEO6M), gps_read);
         page_content += F("<br/><b>");
@@ -1346,6 +1362,7 @@ void webserver_config() {
         readBoolParam(bmp_read);
         readBoolParam(bmp280_read);
         readBoolParam(bme280_read);
+        readBoolParam(bme680_read);
         readBoolParam(ds18b20_read);
         readBoolParam(gps_read);
         readBoolParam(auto_update);
@@ -1392,6 +1409,7 @@ void webserver_config() {
         page_content += line_from_value(tmpl(FPSTR(INTL_LESE), "BMP180"), String(bmp_read));
         page_content += line_from_value(tmpl(FPSTR(INTL_LESE), "BMP280"), String(bmp280_read));
         page_content += line_from_value(tmpl(FPSTR(INTL_LESE), "BME280"), String(bme280_read));
+        page_content += line_from_value(tmpl(FPSTR(INTL_LESE), "BME680"), String(bme680_read));
         page_content += line_from_value(tmpl(FPSTR(INTL_LESE), "DS18B20"), String(ds18b20_read));
         page_content += line_from_value(tmpl(FPSTR(INTL_LESE), "GPS"), String(gps_read));
         page_content += line_from_value(FPSTR(INTL_AUTO_UPDATE), String(auto_update));
@@ -1569,6 +1587,12 @@ void webserver_values() {
             page_content += table_row_from_value("BME280", FPSTR(INTL_TEMPERATUR), check_display_value(last_value_BME280_T, -128, 1, 0), unit_T);
             page_content += table_row_from_value("BME280", FPSTR(INTL_LUFTFEUCHTE), check_display_value(last_value_BME280_H, -1, 1, 0), unit_H);
             page_content += table_row_from_value("BME280", FPSTR(INTL_LUFTDRUCK),  check_display_value(last_value_BME280_P / 100.0, (-1 / 100.0), 2, 0), unit_P);
+        }
+        if (bme680_read) {
+            page_content += empty_row;
+            page_content += table_row_from_value("BME680", FPSTR(INTL_TEMPERATUR), check_display_value(last_value_BME680_T, -128, 1, 0), unit_T);
+            page_content += table_row_from_value("BME680", FPSTR(INTL_LUFTFEUCHTE), check_display_value(last_value_BME680_H, -1, 1, 0), unit_H);
+            page_content += table_row_from_value("BME680", FPSTR(INTL_LUFTDRUCK),  check_display_value(last_value_BME680_P / 100.0, (-1 / 100.0), 2, 0), unit_P);
         }
         if (ds18b20_read) {
             page_content += empty_row;
@@ -3270,6 +3294,14 @@ void display_values() {
         p_value = last_value_BME280_P;
         p_sensor = "BME280";
     }
+    if (bme680_read) {
+        t_value = last_value_BME680_T;
+        t_sensor = "BME680";
+        h_value = last_value_BME680_H;
+        h_sensor = "BME680";
+        p_value = last_value_BME680_P;
+        p_sensor = "BME680";
+    }
     if (gps_read) {
         lat_value = last_value_GPS_lat;
         lon_value = last_value_GPS_lon;
@@ -3279,7 +3311,7 @@ void display_values() {
 	if (ppd_read || pms24_read || pms32_read || hpm_read || sds_read) {
 		screens[screen_count++] = 1;
 	}
-	if (dht_read || ds18b20_read || htu21d_read || bmp_read || bmp280_read || bme280_read) {
+	if (dht_read || ds18b20_read || htu21d_read || bmp_read || bmp280_read || bme280_read || bme680_read) {
 		screens[screen_count++] = 2;
 	}
 	if (gps_read) {
@@ -3550,6 +3582,9 @@ void setup() {
     if (bme280_read) {
         debug_out(F("Read BME280..."), DEBUG_MIN_INFO, 1);
     }
+    if (bme680_read) {
+        debug_out(F("Read BME680..."), DEBUG_MIN_INFO, 1);
+    }
     if (ds18b20_read) {
 		ds18b20.begin();                                    // Start DS18B20
         debug_out(F("Read DS18B20..."), DEBUG_MIN_INFO, 1);
@@ -3604,6 +3639,10 @@ void setup() {
         debug_out(F("Check BME280 wiring"), DEBUG_MIN_INFO, 1);
         bme280_init_failed = 1;
     }
+    if (bme680_read && !initBME680(0x76) && !initBME680(0x77)) {
+        debug_out(F("Check BME680 wiring"), DEBUG_MIN_INFO, 1);
+        bme680_init_failed = 1;
+    }
     if (sds_read) {
         debug_out(F("Stopping SDS011..."), DEBUG_MIN_INFO, 1);
         stop_SDS();
@@ -3654,6 +3693,7 @@ void loop() {
     String result_BMP = "";
     String result_BMP280 = "";
     String result_BME280 = "";
+    String result_BME680 = "";
     String result_DS18B20 = "";
     String result_GPS = "";
     String signal_strength = "";
@@ -3742,6 +3782,11 @@ void loop() {
         if (bme280_read && (! bme280_init_failed)) {
             debug_out(F("Call sensorBME280"), DEBUG_MAX_INFO, 1);
             result_BME280 = sensorBME280();                 // getting temperature, humidity and pressure (optional)
+        }
+
+        if (bme680_read && (! bme680_init_failed)) {
+            debug_out(F("Call sensorBME680"), DEBUG_MAX_INFO, 1);
+            result_BME680 = sensorBME680();                 // getting temperature, humidity and pressure (optional)
         }
 
         if (ds18b20_read) {
@@ -3858,6 +3903,15 @@ void loop() {
                 debug_out(F("## Sending to luftdaten.info (BME280): "), DEBUG_MIN_INFO, 1);
                 start_send = micros();
                 sendLuftdaten(result_BME280, BME280_API_PIN, host_dusti, httpPort_dusti, url_dusti, "BME280_");
+                sum_send_time += micros() - start_send;
+            }
+        }
+        if (bme680_read && (! bme680_init_failed)) {
+            data += result_BME680;
+            if (send2dusti) {
+                debug_out(F("## Sending to luftdaten.info (BME680): "), DEBUG_MIN_INFO, 1);
+                start_send = micros();
+                sendLuftdaten(result_BME680, BME680_API_PIN, host_dusti, httpPort_dusti, url_dusti, "BME680_");
                 sum_send_time += micros() - start_send;
             }
         }
