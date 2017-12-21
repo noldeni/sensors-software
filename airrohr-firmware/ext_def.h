@@ -134,6 +134,7 @@
 // BME680, temperature, humidity, pressure, VOC
 #define BME680_READ 0
 #define BME680_API_PIN 11
+#define SEALEVELPRESSURE_HPA (1013.25)
 #if defined(ESP8266)
 #define BME680_PIN_SCL D4
 #define BME680_PIN_SDA D3

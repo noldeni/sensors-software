@@ -2343,6 +2343,51 @@ String sensorBME280() {
 }
 
 /****************************************************************
+* read BME680 sensor values                                     *
+*****************************************************************/
+String sensorBME680() {
+    String s = "";
+    double t;
+    double h;
+    double p;
+    double g;
+    double a;
+
+    debug_out(String(FPSTR(DBG_TXT_START_READING)) + "BME680", DEBUG_MED_INFO, 1);
+
+    if (! bme680.performReading()) {
+        debug_out(F("BME680 couldn't be read"), DEBUG_ERROR, 1);
+    } else {
+        t = bme680.temperature;             // *C
+        h = bme680.humidity;                // %
+        p = bme680.pressure / 100.0;        // hPa
+        g = bme680.gas_resistance / 1000.0; // KOhms
+        a = bme680.readAltitude(SEALEVELPRESSURE_HPA);
+
+        last_value_BME680_T = -128;
+        last_value_BME680_H = -1;
+        last_value_BME680_P = -1;
+        debug_out(FPSTR(DBG_TXT_TEMPERATURE), DEBUG_MIN_INFO, 0);
+        debug_out(Float2String(t) + " C", DEBUG_MIN_INFO, 1);
+        debug_out(FPSTR(DBG_TXT_HUMIDITY), DEBUG_MIN_INFO, 0);
+        debug_out(Float2String(h) + " %", DEBUG_MIN_INFO, 1);
+        debug_out(FPSTR(DBG_TXT_PRESSURE), DEBUG_MIN_INFO, 0);
+        debug_out(Float2String(p / 100) + " hPa", DEBUG_MIN_INFO, 1);
+        last_value_BME680_T = t;
+        last_value_BME680_H = h;
+        last_value_BME680_P = p;
+        s += Value2Json(F("BME680_temperature"), Float2String(last_value_BME680_T));
+        s += Value2Json(F("BME680_humidity"), Float2String(last_value_BME680_H));
+        s += Value2Json(F("BME680_pressure"), Float2String(last_value_BME680_P));
+    }
+    debug_out(F("----"), DEBUG_MIN_INFO, 1);
+
+    debug_out(String(FPSTR(DBG_TXT_END_READING)) + "BME680", DEBUG_MED_INFO, 1);
+
+    return s;
+}
+
+/****************************************************************
 * read DS18B20 sensor values                                    *
 *****************************************************************/
 String sensorDS18B20() {
