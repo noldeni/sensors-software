@@ -131,6 +131,14 @@
 #define BME280_PIN_SDA D3
 #endif
 
+// BME680, temperature, humidity, pressure, VOC
+#define BME680_READ 0
+#define BME680_API_PIN 11
+#if defined(ESP8266)
+#define BME680_PIN_SCL D4
+#define BME680_PIN_SDA D3
+#endif
+
 // DS18B20, temperature
 #define DS18B20_READ 0
 #define DS18B20_API_PIN 13
