@@ -380,7 +380,8 @@ double last_value_BME280_P = -1.0;
 double last_value_BME680_T = -128.0;
 double last_value_BME680_H = -1.0;
 double last_value_BME680_P = -1.0;
-double last_value_BME680_V = -1.0;
+double last_value_BME680_G = -1.0;
+double last_value_BME680_A = -1.0;
 double last_value_DS18B20_T = -1.0;
 double last_value_GPS_lat = -200.0;
 double last_value_GPS_lon = -200.0;
@@ -1521,6 +1522,8 @@ void webserver_values() {
         const String unit_T = " °C";
         const String unit_H = " %";
         const String unit_P = " hPa";
+        const String unit_G = " kOhm";
+        const String unit_A = " m";
         String empty_row = F("<tr><td colspan='3'>&nbsp;</td></tr>");
         last_page_load = millis();
         long signal_strength = WiFi.RSSI();
@@ -1594,6 +1597,8 @@ void webserver_values() {
             page_content += table_row_from_value("BME680", FPSTR(INTL_TEMPERATUR), check_display_value(last_value_BME680_T, -128, 1, 0), unit_T);
             page_content += table_row_from_value("BME680", FPSTR(INTL_LUFTFEUCHTE), check_display_value(last_value_BME680_H, -1, 1, 0), unit_H);
             page_content += table_row_from_value("BME680", FPSTR(INTL_LUFTDRUCK),  check_display_value(last_value_BME680_P / 100.0, (-1 / 100.0), 2, 0), unit_P);
+            page_content += table_row_from_value("BME680", FPSTR(INTL_GAS),  check_display_value(last_value_BME680_G / 1000.0, (-1 / 1000.0), 2, 0), unit_G);
+            page_content += table_row_from_value("BME680", FPSTR(INTL_HOEHE),  check_display_value(last_value_BME680_A, -1, 1, 0), unit_A);
         }
         if (ds18b20_read) {
             page_content += empty_row;
@@ -2360,25 +2365,37 @@ String sensorBME680() {
     } else {
         t = bme680.temperature;             // *C
         h = bme680.humidity;                // %
-        p = bme680.pressure / 100.0;        // hPa
-        g = bme680.gas_resistance / 1000.0; // KOhms
+        p = bme680.pressure;                // hPa
+        g = bme680.gas_resistance;          // KOhms
+        //p = bme680.pressure / 100.0;        // hPa
+        //g = bme680.gas_resistance / 1000.0; // KOhms
         a = bme680.readAltitude(SEALEVELPRESSURE_HPA);
 
         last_value_BME680_T = -128;
         last_value_BME680_H = -1;
         last_value_BME680_P = -1;
+        last_value_BME680_G = -1;
+        last_value_BME680_A = -1;
         debug_out(FPSTR(DBG_TXT_TEMPERATURE), DEBUG_MIN_INFO, 0);
         debug_out(Float2String(t) + " C", DEBUG_MIN_INFO, 1);
         debug_out(FPSTR(DBG_TXT_HUMIDITY), DEBUG_MIN_INFO, 0);
         debug_out(Float2String(h) + " %", DEBUG_MIN_INFO, 1);
         debug_out(FPSTR(DBG_TXT_PRESSURE), DEBUG_MIN_INFO, 0);
         debug_out(Float2String(p / 100) + " hPa", DEBUG_MIN_INFO, 1);
+        debug_out(FPSTR(DBG_TXT_GAS), DEBUG_MIN_INFO, 0);
+        debug_out(Float2String(g / 1000) + " kOhm", DEBUG_MIN_INFO, 1);
+        debug_out(FPSTR(DBG_TXT_ALTITUDE), DEBUG_MIN_INFO, 0);
+        debug_out(Float2String(a) + " m", DEBUG_MIN_INFO, 1);
         last_value_BME680_T = t;
         last_value_BME680_H = h;
         last_value_BME680_P = p;
+        last_value_BME680_G = g;
+        last_value_BME680_A = a;
         s += Value2Json(F("BME680_temperature"), Float2String(last_value_BME680_T));
         s += Value2Json(F("BME680_humidity"), Float2String(last_value_BME680_H));
         s += Value2Json(F("BME680_pressure"), Float2String(last_value_BME680_P));
+        s += Value2Json(F("BME680_gas"), Float2String(last_value_BME680_G));
+        s += Value2Json(F("BME680_altitude"), Float2String(last_value_BME680_A));
     }
     debug_out(F("----"), DEBUG_MIN_INFO, 1);
 
@@ -3261,9 +3278,13 @@ void display_values() {
     double t_value = -128.0;
     double h_value = -1.0;
     double p_value = -1.0;
+    double g_value = -1.0;
+    double a_value = -1.0;
     String t_sensor = "";
     String h_sensor = "";
     String p_sensor = "";
+    String g_sensor = "";
+    String a_sensor = "";
     double pm10_value = -1.0;
     double pm25_value = -1.0;
     String pm10_sensor = "";
@@ -3347,6 +3368,10 @@ void display_values() {
         h_sensor = "BME680";
         p_value = last_value_BME680_P;
         p_sensor = "BME680";
+        g_value = last_value_BME680_G;
+        g_sensor = "BME680";
+        a_value = last_value_BME680_A;
+        a_sensor = "BME680";
     }
     if (gps_read) {
         lat_value = last_value_GPS_lat;

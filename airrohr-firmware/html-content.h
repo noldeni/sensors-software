@@ -8,6 +8,8 @@ const char TXT_CONTENT_TYPE_IMAGE_PNG[] PROGMEM = "image/png";
 const char DBG_TXT_TEMPERATURE[] PROGMEM = "Temperature: ";
 const char DBG_TXT_HUMIDITY[] PROGMEM = "Humidity: ";
 const char DBG_TXT_PRESSURE[] PROGMEM = "Pressure: ";
+const char DBG_TXT_GAS[] PROGMEM = "Gas: ";
+const char DBG_TXT_ALTITUDE[] PROGMEM = "Altitude: ";
 const char DBG_TXT_START_READING[] PROGMEM = "Start reading ";
 const char DBG_TXT_END_READING[] PROGMEM = "End reading ";
 
