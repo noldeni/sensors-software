@@ -80,6 +80,8 @@
 *      GND       ->     Pin GND                                        *
 *      SCL       ->     Pin D4 (GPIO2)                                 *
 *      SDA       ->     Pin D3 (GPIO0)                                 *
+*      (D3 is configurable through ext_def.h I2C_SCL_PIN)              *
+*      (D4 is configurable through ext_def.h I2C_SDA_PIN)              *
 *                                                                      *
 ************************************************************************
 *                                                                      *
@@ -226,7 +228,7 @@ int TimeZone = 1;
 /****************************************************************
 * Display definitions                                           *
 *****************************************************************/
-SSD1306   display(0x3c, D3, D4);
+SSD1306   display(0x3c, I2C_SCL_PIN, I2C_SDA_PIN);
 LiquidCrystal_I2C lcd_1602_27(0x27, 16, 2);
 LiquidCrystal_I2C lcd_1602_3f(0x3F, 16, 2);
 LiquidCrystal_I2C lcd_2004_27(0x27, 20, 4);
@@ -3615,7 +3617,7 @@ bool initBME680(char addr) {
 void setup() {
     Serial.begin(9600);					// Output to Serial at 9600 baud
 #if defined(ESP8266)
-    Wire.begin(D3, D4);
+    Wire.begin(I2C_SCL_PIN, I2C_SDA_PIN);
     esp_chipid = String(ESP.getChipId());
     WiFi.persistent(false);
 #endif
